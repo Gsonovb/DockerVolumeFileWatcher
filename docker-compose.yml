@@ -1,4 +1,4 @@
-version: '3.4'
+version: "3.4"
 
 services:
   worker:
@@ -6,38 +6,33 @@ services:
     restart: always
     volumes:
       - "./demo/worker/writefile.sh:/app/writefile.sh"
-      - "./demo/volume/etc/nginx/proxy.conf:/etc/nginx/conf.d/default.conf"
+      - "./demo/nginx/default.conf:/etc/nginx/conf.d/default.conf"
       - "share:/sharedata"
     entrypoint: "/bin/bash -c 'trap exit TERM; while :; do /app/writefile.sh > /etc/nginx/conf.d/default.conf ;/app/writefile.sh > /sharedata/default.conf ; sleep 5s & wait $${!}; done;'"
 
-
-  web1:
-    container_name: web1
-    restart: always
-    image: nginx
-    ports:
-      - 8080:80
-    volumes:
-      - "./demo/volume/etc/nginx/proxy.conf:/etc/nginx/conf.d/default.conf"
-      - "share:/sharedata"
+  # web1:
+  #   restart: always
+  #   image: nginx
+  #   ports:
+  #     - 8080:80
+  #   volumes:
+  #     - "./demo/nginx/default.conf:/etc/nginx/conf.d/default.conf"
+  #     - "share:/sharedata"
 
   filewatcher:
     image: filewatcher
     build:
-      context: .
-      dockerfile: src/Dockerfile
+      context: ./src
+      dockerfile: Dockerfile
     restart: always
     environment:
-     - FileWatcher_path=/etc
-     - FileWatcher_time=15
-     - FileWatcher_recurse=true
-     - FileWatcher_command=sh
-     - FileWatcher_arguments=-c,""
+      - FileWatcher_path=/etc
+      - FileWatcher_time=15
+      - FileWatcher_recurse=true
 
     volumes:
-      - "./demo/volume/etc/nginx/proxy.conf:/etc/nginx/conf.d/default.conf"
+      - "./demo/nginx/default.conf:/etc/nginx/conf.d/default.conf"
       - "share:/sharedata"
 
-
 volumes:
-  share: 
+  share:
