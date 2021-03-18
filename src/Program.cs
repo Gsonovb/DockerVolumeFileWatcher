@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
+using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -51,6 +53,7 @@ namespace FileWatcher
             rootCommand.Handler = CommandHandler.Create<IConsole, CancellationToken, DirectoryInfo, bool, int, String, String[]>(
                 async (IConsole console, CancellationToken token, DirectoryInfo path, bool recurse, int time, string command, string[] arguments) =>
                 {
+
 #if DEBUG
                     Console.Write($"Option value for --path: {path?.FullName ?? "null"}  , --recurse: {recurse} ，--time:{time}, --command: {command ?? "null"} , --arguments: ");
 
@@ -69,27 +72,116 @@ namespace FileWatcher
                     Console.WriteLine("");
 #endif
 
+                    DirectoryInfo tpath = path;
+                    bool trecurse = recurse;
+                    int ttime = time;
+                    string tcommand = command;
+                    string[] targuments = arguments;
+
+                    try
+                    {
+#if DEBUG
+                        Console.WriteLine("Environment Info:");
+#endif
+                        var envars = Environment.GetEnvironmentVariables();
+
+                        foreach (DictionaryEntry item in envars)
+                        {
+                            var name = item.Key.ToString().ToLower();
+                            var value = item.Value as string;
+#if DEBUG
+                            Console.WriteLine($"   {name}:{value}");
+#endif
+
+                            if (string.Equals(name, "FileWatcher_path", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                if (null == path && !string.IsNullOrEmpty(value) && Directory.Exists(value))
+                                {
+                                    tpath = new DirectoryInfo(value);
+                                }
+                            }
+                            else if (string.Equals(name, "FileWatcher_recurse", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                if (bool.TryParse(value, out trecurse))
+                                {
+                                }
+                                else
+                                {
+                                    trecurse = false;
+                                }
+                            }
+                            else if (string.Equals(name, "FileWatcher_time", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                if (int.TryParse(value, out ttime))
+                                {
+
+                                }
+                                else
+                                {
+                                    ttime = time;
+                                }
+                            }
+                            else if (string.Equals(name, "FileWatcher_command", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                if (string.IsNullOrEmpty(tcommand) && !string.IsNullOrEmpty(value))
+                                {
+                                    tcommand = value;
+                                }
+                            }
+                            else if (string.Equals(name, "FileWatcher_arguments", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                if ((null == targuments || targuments.Length == 0) && !string.IsNullOrEmpty(value))
+                                {
+                                    targuments = value.Split(",", StringSplitOptions.RemoveEmptyEntries);
+
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Can't Get Environment Variables : {ex.Message}");
+                    }
+
+
+
                     try
                     {
 
-                        if (null == path || !path.Exists)
+
+                        if (null == tpath || !tpath.Exists)
                         {
-                            Console.WriteLine($"The specified directory does not exist :{path?.FullName}");
+                            Console.WriteLine($"The specified directory does not exist :{tpath?.FullName}");
                             return 1;
                         }
 
 
-
-                        RootDir = path.FullName;
-                        RecurseFlag = recurse;
-                        IntervalTime = time * 1000;
-                        RunCommand = command ?? "";
+                        RootDir = tpath.FullName;
+                        RecurseFlag = trecurse;
+                        IntervalTime = ttime * 1000;
+                        RunCommand = tcommand ?? "";
                         Arguments = new List<string>();
 
                         if (null != arguments)
                         {
-                            Arguments.AddRange(arguments);
+                            Arguments.AddRange(targuments);
                         }
+
+                        Console.WriteLine($"Start monitoring directory :{RootDir}");
+
+                        Console.WriteLine($"  Recurse     : {RecurseFlag}");
+                        Console.WriteLine($"  IntervalTime: {IntervalTime}");
+                        Console.WriteLine($"  RunCommand  : {RunCommand}");
+                        Console.Write($"  Arguments   : ");
+
+
+                        foreach (string argitem in Arguments)
+                        {
+                            Console.Write(argitem);
+                            Console.Write(" ");
+                        }
+
+                        Console.WriteLine("");
 
 
                         HashSet = await GetHashSet(RootDir, RecurseFlag, token);
@@ -97,9 +189,13 @@ namespace FileWatcher
                         Task task = GetExectingTask(token);
 
 
-                        Console.WriteLine("Press any key to quit.");
-                        Console.ReadLine();
+                        // Console.WriteLine("Press any key to quit.");
+                        // Console.ReadLine();
 
+                        Console.WriteLine("Press 'q' to quit the sample.");
+                        while (Console.Read() != 'q') ;
+
+                        Console.WriteLine("The App is exited.");
                         return 0;
                     }
                     catch (OperationCanceledException)
@@ -108,7 +204,6 @@ namespace FileWatcher
                         return 1;
                     }
                 });
-
 
             return rootCommand.InvokeAsync(args).Result;
         }

@@ -1,7 +1,8 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/runtime:5.0 AS base
-WORKDIR /app
+#FROM mcr.microsoft.com/dotnet/runtime:5.0 AS base
+FROM nginx:latest AS base
+#WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
@@ -16,6 +17,16 @@ RUN dotnet publish "FileWatcher.csproj" -c Debug -r linux-x64 -p:PublishSingleFi
 
 FROM base AS final
 RUN apt-get update && apt-get install -y --no-install-recommends libc6 libgcc1 libgssapi-krb5-2 libicu63 libssl1.1 libstdc++6 zlib1g && apt-get clean
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["/app/FileWatcher"]
+RUN apt-get update && apt-get install -y --no-install-recommends procps nano && apt-get clean
+
+#WORKDIR /app
+COPY --from=publish /app/publish /usr/bin/
+COPY ./docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+
+#RUN echo "#!/bin/bash" > /usr/bin/docker-entrypoint.sh && echo 'sh -c "FileWatcher --path /etc/nginx/conf.d -t 10 -c nginx -a -s reload &"' > /usr/bin/docker-entrypoint.sh && echo 'exec "$@" ' > /usr/bin/docker-entrypoint.sh 
+
+RUN chmod +x /usr/bin/docker-entrypoint.sh
+
+ENTRYPOINT [ "/usr/bin/docker-entrypoint.sh" ]
+
+CMD ["nginx", "-g", "daemon off;"]
