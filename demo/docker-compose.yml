@@ -1,0 +1,52 @@
+version: "3.4"
+
+services:
+  worker:
+    image: debian:latest
+    restart: always
+    volumes:
+      - "./worker/writefile.sh:/app/writefile.sh"
+      - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
+      - "share:/sharedata"
+    entrypoint: "/bin/bash -c 'trap exit TERM; while :; do /app/writefile.sh > /etc/nginx/conf.d/default.conf ;/app/writefile.sh > /sharedata/default.conf ; sleep 5s & wait $${!}; done;'"
+
+  web1:
+    restart: always
+    image: nginx
+    ports:
+      - 8080:80
+    volumes:
+      - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
+      - "share:/sharedata"
+
+  web2:
+    restart: always
+    build:
+      context: ../src
+      dockerfile: Dockerfile-nginx
+    environment:
+      - FileWatcher_time=15
+    ports:
+      - 8081:80
+    volumes:
+      - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
+      - "share:/sharedata"
+
+  # notify_volume:
+  #   restart: always
+  #   build: ./notify
+  #   entrypoint: "inotifywait --exclude .swp -e create -e modify -e delete -e move /sharedata"
+  #   volumes:
+  #     - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
+  #     - "share:/sharedata"
+
+  # notify_bind:
+  #   restart: always
+  #   build: ./notify
+  #   entrypoint: "inotifywait --exclude .swp -e create -e modify -e delete -e move /etc/nginx/conf.d"
+  #   volumes:
+  #     - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
+  #     - "share:/sharedata"
+
+volumes:
+  share:
