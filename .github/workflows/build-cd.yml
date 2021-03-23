@@ -2,6 +2,8 @@ name: build-cd
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*"
     paths-ignore:
@@ -43,7 +45,7 @@ jobs:
           RuntimeIdentifier: ${{ matrix.RuntimeIdentifier }}
 
       - name: Build
-        run: dotnet publish -r $RuntimeIdentifier -p:PublishSingleFile=true --self-contained true --no-restore -o ./publish/$env:RuntimeIdentifier   src/FileWatcher.csproj
+        run: dotnet publish -r $RuntimeIdentifier -p:PublishSingleFile=true --self-contained true --no-restore -o ./publish/$RuntimeIdentifier   src/FileWatcher.csproj
         env:
           RuntimeIdentifier: ${{ matrix.RuntimeIdentifier }}
 
