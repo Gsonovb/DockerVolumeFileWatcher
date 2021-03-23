@@ -8,7 +8,27 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.14" />
+    <PackageReference Include="MinVer" Version="2.5.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20574.7" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>guanyc</Authors>
+    <owners>guanyc</owners>
+    <Product>FileWatcher</Product>
+    <projectUrl>https://github.com/Gsonovb/DockerVolumeFileWatcher</projectUrl>
+    <description>Tool for monitoring file changes between containers</description>
+  </PropertyGroup>
+
+  <!-- <PropertyGroup>
+    <MinVerDefaultPreReleasePhase>preview</MinVerDefaultPreReleasePhase>
+  </PropertyGroup> -->
 
 </Project>

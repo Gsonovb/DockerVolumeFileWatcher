@@ -1,0 +1,74 @@
+name: publish
+
+on:
+  push:
+    tags:
+      - "v*"
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.gitignore"
+      - "**/*.gitattributes"
+
+  workflow_dispatch:
+    tags:
+      - "v*"
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.gitignore"
+      - "**/*.gitattributes"
+
+jobs:
+  build-cd-setup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+
+  build-cd-publish:
+    needs: build-cd-setup
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        RuntimeIdentifier:
+          [win-x64, win-x86]
+          #, linux-x64, linux-musl-x64, linux-arm, linux-arm64
+
+    steps:
+      - name: Restore dependencies
+        run: dotnet restore -r $env:RuntimeIdentifier src/FileWatcher.csproj
+        env:
+          RuntimeIdentifier: ${{ matrix.RuntimeIdentifier }}
+
+      - name: Build
+        run: dotnet publish -r $env:RuntimeIdentifier -p:PublishSingleFile=true --self-contained true --no-restore -o ./publish/$env:RuntimeIdentifier   src/FileWatcher.csproj
+        env:
+          RuntimeIdentifier: ${{ matrix.RuntimeIdentifier }}
+
+  build-cd-upload:
+    needs: build-cd-publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo "GITHUB_REF  $GITHUB_REF GITHUB_HEAD_REF $GITHUB_HEAD_REF GITHUB_BASE_REF $GITHUB_BASE_REF "
+
+      - name: "list dir"
+        run: ls -l  && echo "" &&ls -lR ./publish/
+
+      - name: Package Release
+        run: ./scripts/publishpackage.ps1
+        shell: pwsh
+        env:
+          publishdir: ./publish
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: latest
+          #title:
+          prerelease: true
+          files: ./publish/*.zip

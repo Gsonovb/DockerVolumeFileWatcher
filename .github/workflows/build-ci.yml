@@ -18,7 +18,7 @@ on:
       - "**/*.gitattributes"
 
 jobs:
-  build:
+  build-ci:
     runs-on: ubuntu-latest
 
     steps:
