@@ -30,7 +30,7 @@ jobs:
           #, linux-x64, linux-musl-x64, linux-arm, linux-arm64
 
     steps:
-      - run: echo "GITHUB_REF  $GITHUB_REF GITHUB_HEAD_REF $GITHUB_HEAD_REF GITHUB_BASE_REF $GITHUB_BASE_REF "
+      - run: echo "GITHUB_REF  $GITHUB_REF GITHUB_EVENT_NAME $GITHUB_EVENT_NAME GITHUB_ACTION $GITHUB_ACTION   GITHUB_RUN_ID $GITHUB_RUN_ID GITHUB_RUN_NUMBER $GITHUB_RUN_NUMBER"
       - uses: actions/checkout@v2
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
@@ -38,12 +38,12 @@ jobs:
           dotnet-version: 5.0.x
 
       - name: Restore dependencies
-        run: dotnet restore -r $env:RuntimeIdentifier src/FileWatcher.csproj
+        run: dotnet restore -r $RuntimeIdentifier src/FileWatcher.csproj
         env:
           RuntimeIdentifier: ${{ matrix.RuntimeIdentifier }}
 
       - name: Build
-        run: dotnet publish -r $env:RuntimeIdentifier -p:PublishSingleFile=true --self-contained true --no-restore -o ./publish/$env:RuntimeIdentifier   src/FileWatcher.csproj
+        run: dotnet publish -r $RuntimeIdentifier -p:PublishSingleFile=true --self-contained true --no-restore -o ./publish/$env:RuntimeIdentifier   src/FileWatcher.csproj
         env:
           RuntimeIdentifier: ${{ matrix.RuntimeIdentifier }}
 
