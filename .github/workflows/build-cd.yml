@@ -10,6 +10,8 @@ on:
       - "**/*.gitattributes"
 
   workflow_dispatch:
+    branches:
+      - main
     tags:
       - "v*"
     paths-ignore:
@@ -19,7 +21,6 @@ on:
 
 jobs:
   build-cd-publish:
-    needs: build-cd-setup
     runs-on: ubuntu-latest
 
     strategy:
@@ -29,6 +30,7 @@ jobs:
           #, linux-x64, linux-musl-x64, linux-arm, linux-arm64
 
     steps:
+      - run: echo "GITHUB_REF  $GITHUB_REF GITHUB_HEAD_REF $GITHUB_HEAD_REF GITHUB_BASE_REF $GITHUB_BASE_REF "
       - uses: actions/checkout@v2
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
