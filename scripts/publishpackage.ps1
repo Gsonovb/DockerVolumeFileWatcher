@@ -67,7 +67,7 @@ else {
 
         $path = Join-Path -Path $dir.Parent.FullName -ChildPath $filename
 
-        $files = $dir.GetFiles() | Where-Object Name -CNotContains ".pdb"
+        $files = $dir.GetFiles() | Where-Object { $_.Extension -ne ".pdb" }
         
         Write-Host "Compress Files in $dir  to $path"
 

@@ -32,20 +32,16 @@ jobs:
           #, linux-x64, linux-musl-x64, linux-arm, linux-arm64
 
     steps:
-      - run: echo "GITHUB_REF  $GITHUB_REF GITHUB_EVENT_NAME $GITHUB_EVENT_NAME GITHUB_ACTION $GITHUB_ACTION   GITHUB_RUN_ID $GITHUB_RUN_ID GITHUB_RUN_NUMBER $GITHUB_RUN_NUMBER"
+      - run: echo "GITHUB_REF  $GITHUB_REF GITHUB_EVENT_NAME $GITHUB_EVENT_NAME  GITHUB_EVENT_PATH $GITHUB_EVENT_PATH GITHUB_ACTION $GITHUB_ACTION   GITHUB_RUN_ID $GITHUB_RUN_ID GITHUB_RUN_NUMBER $GITHUB_RUN_NUMBER"
+
       - uses: actions/checkout@v2
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 5.0.x
 
-      - name: Restore dependencies
-        run: dotnet restore -r $RuntimeIdentifier src/FileWatcher.csproj
-        env:
-          RuntimeIdentifier: ${{ matrix.RuntimeIdentifier }}
-
       - name: Build
-        run: dotnet publish -r $RuntimeIdentifier -p:PublishSingleFile=true --self-contained true --no-restore -o ./publish/$RuntimeIdentifier   src/FileWatcher.csproj
+        run: dotnet publish -c Release -r $RuntimeIdentifier -p:PublishSingleFile=true --self-contained true  -o ./publish/$RuntimeIdentifier   src/FileWatcher.csproj
         env:
           RuntimeIdentifier: ${{ matrix.RuntimeIdentifier }}
 
@@ -53,14 +49,23 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{matrix.RuntimeIdentifier}}
+          retention-days: 1
           path: ./publish/${{matrix.RuntimeIdentifier}}/*
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          #automatic_release_tag: latest
+          title: "${{ github.run_id }}-${{ github.run_number }}"
+          prerelease: true
+          files: ./publish/*.zip
 
   build-cd-upload:
     needs: build-cd-publish
     runs-on: ubuntu-latest
 
     steps:
-      - run: echo "GITHUB_REF  $GITHUB_REF GITHUB_HEAD_REF $GITHUB_HEAD_REF GITHUB_BASE_REF $GITHUB_BASE_REF "
+      - run: echo "GITHUB_REF  $GITHUB_REF GITHUB_EVENT_NAME $GITHUB_EVENT_NAME  GITHUB_EVENT_PATH $GITHUB_EVENT_PATH GITHUB_ACTION $GITHUB_ACTION   GITHUB_RUN_ID $GITHUB_RUN_ID GITHUB_RUN_NUMBER $GITHUB_RUN_NUMBER"
 
       - uses: actions/checkout@v2
 
