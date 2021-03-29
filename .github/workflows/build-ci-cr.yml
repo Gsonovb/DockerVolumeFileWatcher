@@ -1,0 +1,243 @@
+name: cicr
+
+on:
+  # schedule:
+  #   # every week sunday
+  #   - cron:  '0 0 * * 0'
+
+  push:
+    branches:
+      - "*"
+    tags-ignore:
+      - "*"
+
+  workflow_dispatch:
+    inputs:
+      versionSpec:
+        description: Required version in the form of 5.x or exact version like 5.0.0.
+        required: true
+        default: "5.x"
+      includePrerelease:
+        description: Include pre-release versions when matching a version.
+        required: false
+        default: false
+
+jobs:
+  build-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.9
+        with:
+          versionSpec: "5.x"
+
+      - name: Display GitVersion config
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.9.9
+        with:
+          useConfigFile: true
+          additionalArguments: "/updateprojectfiles"
+
+      - name: Display GitVersion outputs
+        run: |
+          echo "Major: ${{ steps.gitversion.outputs.major }}"
+          echo "Minor: ${{ steps.gitversion.outputs.minor }}"
+          echo "Patch: ${{ steps.gitversion.outputs.patch }}"
+          echo "PreReleaseTag: ${{ steps.gitversion.outputs.preReleaseTag }}"
+          echo "PreReleaseTagWithDash: ${{ steps.gitversion.outputs.preReleaseTagWithDash }}"
+          echo "PreReleaseLabel: ${{ steps.gitversion.outputs.preReleaseLabel }}"
+          echo "PreReleaseNumber: ${{ steps.gitversion.outputs.preReleaseNumber }}"
+          echo "WeightedPreReleaseNumber: ${{ steps.gitversion.outputs.weightedPreReleaseNumber }}"
+          echo "BuildMetaData: ${{ steps.gitversion.outputs.buildMetaData }}"
+          echo "BuildMetaDataPadded: ${{ steps.gitversion.outputs.buildMetaDataPadded }}"
+          echo "FullBuildMetaData: ${{ steps.gitversion.outputs.fullBuildMetaData }}"
+          echo "MajorMinorPatch: ${{ steps.gitversion.outputs.majorMinorPatch }}"
+          echo "SemVer: ${{ steps.gitversion.outputs.semVer }}"
+          echo "LegacySemVer: ${{ steps.gitversion.outputs.legacySemVer }}"
+          echo "LegacySemVerPadded: ${{ steps.gitversion.outputs.legacySemVerPadded }}"
+          echo "AssemblySemVer: ${{ steps.gitversion.outputs.assemblySemVer }}"
+          echo "AssemblySemFileVer: ${{ steps.gitversion.outputs.assemblySemFileVer }}"
+          echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
+          echo "InformationalVersion: ${{ steps.gitversion.outputs.informationalVersion }}"
+          echo "BranchName: ${{ steps.gitversion.outputs.branchName }}"
+          echo "EscapedBranchName: ${{ steps.gitversion.outputs.escapedBranchName }}"
+          echo "Sha: ${{ steps.gitversion.outputs.sha }}"
+          echo "ShortSha: ${{ steps.gitversion.outputs.shortSha }}"
+          echo "NuGetVersionV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"
+          echo "NuGetVersion: ${{ steps.gitversion.outputs.nuGetVersion }}"
+          echo "NuGetPreReleaseTagV2: ${{ steps.gitversion.outputs.nuGetPreReleaseTagV2 }}"
+          echo "NuGetPreReleaseTag: ${{ steps.gitversion.outputs.nuGetPreReleaseTag }}"
+          echo "VersionSourceSha: ${{ steps.gitversion.outputs.versionSourceSha }}"
+          echo "CommitsSinceVersionSource: ${{ steps.gitversion.outputs.commitsSinceVersionSource }}"
+          echo "CommitsSinceVersionSourcePadded: ${{ steps.gitversion.outputs.commitsSinceVersionSourcePadded }}"
+          echo "UncommittedChanges: ${{ steps.gitversion.outputs.uncommittedChanges }}"
+          echo "CommitDate: ${{ steps.gitversion.outputs.commitDate }}"
+
+      - name: Restore dependencies
+        run: cd src && dotnet restore
+
+      - name: Build
+        run: cd src && dotnet build --no-restore
+
+  build-cd-publish:
+    needs: build-ci
+    #if: ${{ startsWith(github.ref,'refs/heads/main') || startsWith(github.ref,'refs/heads/release') }}
+    if: github.ref == 'refs/heads/main'
+
+    #windows-latest
+    #if your publish has windows file metedate(eg fileversion)  ,you need use Windows image to build ,and you need change run command line for windows.
+    runs-on: ubuntu-latest
+
+    outputs:
+      semVer: ${{ steps.gitversion.outputs.semVer }}
+      FullSemVer: ${{ steps.gitversion.outputs.FullSemVer }}
+      ShortSha: ${{ steps.gitversion.outputs.ShortSha }}
+      PreReleaseLabel: ${{ steps.gitversion.outputs.PreReleaseLabel }}
+      MajorMinorPatch: ${{ steps.gitversion.outputs.MajorMinorPatch }}
+
+    strategy:
+      matrix:
+        RuntimeIdentifier:
+          [win-x64, win-x86, linux-x64, linux-musl-x64, linux-arm, linux-arm64]
+
+    steps:
+      - run: echo "GITHUB_REF  $GITHUB_REF GITHUB_EVENT_NAME $GITHUB_EVENT_NAME  GITHUB_SHA $GITHUB_SHA GITHUB_ACTION $GITHUB_ACTION   GITHUB_RUN_ID $GITHUB_RUN_ID GITHUB_RUN_NUMBER $GITHUB_RUN_NUMBER"
+
+      - name: Checkout source
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.9
+        with:
+          versionSpec: "5.x"
+
+      - name: Display GitVersion config
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.9.9
+        with:
+          useConfigFile: true
+          additionalArguments: "/updateprojectfiles"
+
+      - name: Display GitVersion outputs
+        run: |
+          echo "Major: ${{ steps.gitversion.outputs.major }}"
+          echo "Minor: ${{ steps.gitversion.outputs.minor }}"
+          echo "Patch: ${{ steps.gitversion.outputs.patch }}"
+          echo "PreReleaseTag: ${{ steps.gitversion.outputs.preReleaseTag }}"
+          echo "PreReleaseTagWithDash: ${{ steps.gitversion.outputs.preReleaseTagWithDash }}"
+          echo "PreReleaseLabel: ${{ steps.gitversion.outputs.preReleaseLabel }}"
+          echo "PreReleaseNumber: ${{ steps.gitversion.outputs.preReleaseNumber }}"
+          echo "WeightedPreReleaseNumber: ${{ steps.gitversion.outputs.weightedPreReleaseNumber }}"
+          echo "BuildMetaData: ${{ steps.gitversion.outputs.buildMetaData }}"
+          echo "BuildMetaDataPadded: ${{ steps.gitversion.outputs.buildMetaDataPadded }}"
+          echo "FullBuildMetaData: ${{ steps.gitversion.outputs.fullBuildMetaData }}"
+          echo "MajorMinorPatch: ${{ steps.gitversion.outputs.majorMinorPatch }}"
+          echo "SemVer: ${{ steps.gitversion.outputs.semVer }}"
+          echo "LegacySemVer: ${{ steps.gitversion.outputs.legacySemVer }}"
+          echo "LegacySemVerPadded: ${{ steps.gitversion.outputs.legacySemVerPadded }}"
+          echo "AssemblySemVer: ${{ steps.gitversion.outputs.assemblySemVer }}"
+          echo "AssemblySemFileVer: ${{ steps.gitversion.outputs.assemblySemFileVer }}"
+          echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
+          echo "InformationalVersion: ${{ steps.gitversion.outputs.informationalVersion }}"
+          echo "BranchName: ${{ steps.gitversion.outputs.branchName }}"
+          echo "EscapedBranchName: ${{ steps.gitversion.outputs.escapedBranchName }}"
+          echo "Sha: ${{ steps.gitversion.outputs.sha }}"
+          echo "ShortSha: ${{ steps.gitversion.outputs.shortSha }}"
+          echo "NuGetVersionV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"
+          echo "NuGetVersion: ${{ steps.gitversion.outputs.nuGetVersion }}"
+          echo "NuGetPreReleaseTagV2: ${{ steps.gitversion.outputs.nuGetPreReleaseTagV2 }}"
+          echo "NuGetPreReleaseTag: ${{ steps.gitversion.outputs.nuGetPreReleaseTag }}"
+          echo "VersionSourceSha: ${{ steps.gitversion.outputs.versionSourceSha }}"
+          echo "CommitsSinceVersionSource: ${{ steps.gitversion.outputs.commitsSinceVersionSource }}"
+          echo "CommitsSinceVersionSourcePadded: ${{ steps.gitversion.outputs.commitsSinceVersionSourcePadded }}"
+          echo "UncommittedChanges: ${{ steps.gitversion.outputs.uncommittedChanges }}"
+          echo "CommitDate: ${{ steps.gitversion.outputs.commitDate }}"
+
+      - name: Build
+        run: cd src &&  dotnet publish -c Release -r $RuntimeIdentifier -p:PublishSingleFile=true --self-contained true  -o ../publish/$RuntimeIdentifier
+        env:
+          RuntimeIdentifier: ${{ matrix.RuntimeIdentifier }}
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{matrix.RuntimeIdentifier}}
+          retention-days: 1
+          path: ./publish/${{matrix.RuntimeIdentifier}}/*
+
+  build-cd-upload:
+    needs: [build-cd-publish]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo "GITHUB_REF  $GITHUB_REF GITHUB_EVENT_NAME $GITHUB_EVENT_NAME  GITHUB_SHA $GITHUB_SHA GITHUB_ACTION $GITHUB_ACTION   GITHUB_RUN_ID $GITHUB_RUN_ID GITHUB_RUN_NUMBER $GITHUB_RUN_NUMBER"
+
+      - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          path: ./publish/
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: ./publish/
+
+      - name: Package Release
+        run: ./scripts/publishpackage.ps1
+        shell: pwsh
+        env:
+          publishdir: ./publish
+          version: ${{ needs.build-cd-publish.outputs.semVer }}
+
+      # - uses: "marvinpinto/action-automatic-releases@latest"
+      #   with:
+      #     repo_token: "${{ secrets.GITHUB_TOKEN }}"
+      #     automatic_release_tag: "preview-${{ needs.build-cd-publish.outputs.semVer }}"
+      #     title: "preview v${{ needs. build-cd-publish.outputs.semVer }}"
+      #     prerelease: true
+      #     files: ./publish/*.zip
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        if: ${{ needs.build-cd-publish.outputs.PreReleaseLabel != '' }}
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "${{ needs.build-cd-publish.outputs.PreReleaseLabel }}-v${{ needs.build-cd-publish.outputs.semVer }}"
+          title: "v${{ needs.build-cd-publish.outputs.semVer }}"
+          prerelease: true
+          files: ./publish/*.zip
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        if: ${{ needs.build-cd-publish.outputs.PreReleaseLabel == '' &&  github.ref != 'refs/heads/main' }}
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "v${{ needs.build-cd-publish.outputs.semVer }}"
+          title: "v${{ needs.build-cd-publish.outputs.semVer }}"
+          prerelease: true
+          files: ./publish/*.zip
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        if: ${{ needs.build-cd-publish.outputs.PreReleaseLabel == '' &&  github.ref == 'refs/heads/main' }}
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "v${{ needs.build-cd-publish.outputs.semVer }}"
+          title: "v${{ needs.build-cd-publish.outputs.semVer }}"
+          prerelease: false
+          files: ./publish/*.zip
