@@ -92,7 +92,7 @@ jobs:
   build-cd-publish:
     needs: build-ci
     #if: ${{ startsWith(github.ref,'refs/heads/main') || startsWith(github.ref,'refs/heads/release') }}
-    if: ${{ (github.ref == 'refs/heads/main' ) || includePrerelease }}
+    if: ${{ (github.ref == 'refs/heads/main' ) || inputs.includePrerelease }}
 
     #windows-latest
     #if your publish has windows file metedate(eg fileversion)  ,you need use Windows image to build ,and you need change run command line for windows.
@@ -184,7 +184,7 @@ jobs:
 
   build-cd-upload:
     needs: [build-cd-publish]
-    if: ${{ (github.ref == 'refs/heads/main' ) || includePrerelease }}
+    if: ${{ (github.ref == 'refs/heads/main' ) || inputs.includePrerelease }}
     runs-on: ubuntu-latest
 
     steps:
