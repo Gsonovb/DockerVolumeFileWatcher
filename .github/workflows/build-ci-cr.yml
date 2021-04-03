@@ -18,7 +18,7 @@ on:
         required: true
         default: "5.x"
       includePrerelease:
-        description: Include pre-release versions when matching a version.
+        description: Create Prerelease build
         required: false
         default: false
 
@@ -92,7 +92,7 @@ jobs:
   build-cd-publish:
     needs: build-ci
     #if: ${{ startsWith(github.ref,'refs/heads/main') || startsWith(github.ref,'refs/heads/release') }}
-    if: github.ref == 'refs/heads/main'
+    if: ${{ (github.ref == 'refs/heads/main' ) || github.event.inputs.includePrerelease }}
 
     #windows-latest
     #if your publish has windows file metedate(eg fileversion)  ,you need use Windows image to build ,and you need change run command line for windows.
@@ -184,7 +184,7 @@ jobs:
 
   build-cd-upload:
     needs: [build-cd-publish]
-    if: github.ref == 'refs/heads/main'
+    if: ${{ (github.ref == 'refs/heads/main' ) || github.event.inputs.includePrerelease }}
     runs-on: ubuntu-latest
 
     steps:
@@ -206,14 +206,6 @@ jobs:
         env:
           publishdir: ./publish
           version: ${{ needs.build-cd-publish.outputs.semVer }}
-
-      # - uses: "marvinpinto/action-automatic-releases@latest"
-      #   with:
-      #     repo_token: "${{ secrets.GITHUB_TOKEN }}"
-      #     automatic_release_tag: "preview-${{ needs.build-cd-publish.outputs.semVer }}"
-      #     title: "preview v${{ needs. build-cd-publish.outputs.semVer }}"
-      #     prerelease: true
-      #     files: ./publish/*.zip
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         if: ${{ needs.build-cd-publish.outputs.PreReleaseLabel != '' }}

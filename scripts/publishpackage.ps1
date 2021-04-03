@@ -8,7 +8,7 @@ $publishdir = ".\publish"; # ""
 $version = "";
 
 #FileName Prefix
-$prefix = "FileWatcher";
+$prefix = "filewatcher";
 
 
 Write-Host "System Info:"
