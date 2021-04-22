@@ -1,7 +1,10 @@
 # Docker Volume File Watcher
 
 ---
+[![cicr](https://github.com/Gsonovb/DockerVolumeFileWatcher/actions/workflows/build-ci-cr.yml/badge.svg)](https://github.com/Gsonovb/DockerVolumeFileWatcher/actions/workflows/build-ci-cr.yml)
+
 [English](README.md) | [简体中文](README.zh-cn.md)
+
 
 
 This tool is used to monitor the modification of docker volume mapping file.

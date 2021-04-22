@@ -170,7 +170,7 @@ namespace FileWatcher
                         Console.WriteLine($"Start monitoring directory :{RootDir}");
 
                         Console.WriteLine($"  Recurse     : {RecurseFlag}");
-                        Console.WriteLine($"  IntervalTime: {IntervalTime}");
+                        Console.WriteLine($"  IntervalTime: {ttime}");
                         Console.WriteLine($"  RunCommand  : {RunCommand}");
                         Console.Write($"  Arguments   : ");
 
@@ -188,12 +188,8 @@ namespace FileWatcher
 
                         Task task = GetExectingTask(token);
 
-
-                        // Console.WriteLine("Press any key to quit.");
-                        // Console.ReadLine();
-
-                        Console.WriteLine("Press 'q' to quit the sample.");
-                        while (Console.Read() != 'q') ;
+                        Console.WriteLine("Input 'q' to quit.");
+                        while (Console.ReadLine() != "q") ;
 
                         Console.WriteLine("The App is exited.");
                         return 0;
