@@ -107,7 +107,7 @@ namespace FileWatcher
                                 }
                                 else
                                 {
-                                    trecurse = false;
+                                    trecurse = recurse;
                                 }
                             }
                             else if (string.Equals(name, "FileWatcher_time", StringComparison.InvariantCultureIgnoreCase))

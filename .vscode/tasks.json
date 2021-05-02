@@ -45,6 +45,14 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             }
+        },
+        {
+            "label": "Run docsify serve",
+            "type": "shell",
+            "command": "docsify serve docs",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
         }
     ]
 }

@@ -1,0 +1,5 @@
+* [首页](zh-cn/)
+* [帮助](zh-cn/help)
+* [演示](zh-cn/demo)
+* [如何使用](zh-cn/howtouse)
+* [如何编译](zh-cn/howtobuild)

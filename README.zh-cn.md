@@ -1,7 +1,8 @@
 # Docker Volume File Watcher
 
----
 [![cicr](https://github.com/Gsonovb/DockerVolumeFileWatcher/actions/workflows/build-ci-cr.yml/badge.svg)](https://github.com/Gsonovb/DockerVolumeFileWatcher/actions/workflows/build-ci-cr.yml)
+
+---
 
 [English](README.md) | [简体中文](README.zh-cn.md)
 
@@ -14,19 +15,23 @@
 
 ## 使用方法
 
-待更新
+要使用本工具需要构建Docker镜像，实现启动容器时运行程序。
+具体过程请参考[如何使用](./docs/zh-cn/howtouse.md)。
+
+
+## 演示
+
+演示程序说明本工具的主要功能。请参考[运行演示](./docs/zh-cn/demo.md)。
 
 ## 构建
 
-待更新
-
-<!-- 1. clone simply `git clone` this project to get started.  -->
+要从源代码编译本项目请参考[如何编译](./docs/zh-cn/howtobuild.md)。
 
 ## 贡献
 
-有关对该项目做出贡献的信息，请参见[CONTRIBUTING.md](CONTRIBUTING.md)。
+有关对该项目做出贡献的信息，请参见[CONTRIBUTING.md](CONTRIBUTING.zh-cn.md)。
 
-该项目采用了[贡献者契约]（http://contributor-covenant.org/）定义的行为准则。
+该项目采用了[贡献者契约](http://contributor-covenant.org/)定义的行为准则。
 
 
 ## 许可
