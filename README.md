@@ -13,6 +13,10 @@ A volume mapping file is used to share files multiple containers.
 However, if one container modifies the contents of the file, other containers will not receive notification.
 This tool checks the file attributes to determine whether the file is modified.
 
+## Help document
+
+You can view the [help document](https://gsonovb.github.io/DockerVolumeFileWatcher) on GitHub pages.
+
 ## How to Using
 
 To use this tool, you need to build a docker image to run the program when starting the container.
@@ -30,7 +34,7 @@ The demo program shows the main functions of the tool. Please refer to [run demo
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for information on contributing to this project.
+See [CONTRIBUTING](CONTRIBUTING.md) for information on contributing to this project.
 
 This project has adopted the code of conduct defined by the [Contributor Covenant](http://contributor-covenant.org/) to clarify expected behavior in our community.
 
