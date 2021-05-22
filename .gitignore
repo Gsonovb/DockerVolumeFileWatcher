@@ -287,3 +287,5 @@ __pycache__/
 *.xsd.cs
 .actrc
 act/
+temp/
+demo/nginx/default.conf

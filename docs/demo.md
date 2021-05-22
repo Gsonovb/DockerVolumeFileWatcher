@@ -1,29 +1,24 @@
+  
+  
+#  Demonstration
+  
+  
 ---
-markdown:
-  image_dir: /docs/assets
-  path: /docs/demo.md
-  ignore_from_front_matter: true
-  absolute_image_path: true
-export_on_save:
-  markdown: true
----
-
-# Demonstration
-
----
-<!-- [English](README.md) | [简体中文](README.zh-cn.md) -->
-
-## Explanation
-
+  
+  
+  
+##  Explanation
+  
+  
 This is show that mapped file in multiple containers, when one of the containers writes to the file, other containers cannot receive the file modification notification, so they cannot know that the file has changed.
-
+  
 Using nginx as an example, the **configuration file** is automatically updated by script.
-
+  
 >To make nginx reload the **configuration file**, it is necessary to monitor the file changes through external tools, and execute the reload command after discovering the file modification.
-
-
+  
+  
 The services included are as follows
-
+  
 | Service name   | port | description                                                                             |
 | -------------- | ---- | --------------------------------------------------------------------------------------- |
 | Worker         | -    | autogenerate configuration filefile                                                     |
@@ -35,15 +30,17 @@ The services included are as follows
 All containers are bound to the following disk volumes
 - File `./nginx/default.conf` To `/etc/nginx/conf.d/default.conf`
 - Disk volumes `share` to `/sharedata`
-
-
-## System requirements
+  
+  
+##  System requirements
+  
 - git
 - docker
 - docker-compose
-
-## How to start
-
+  
+##  How to start
+  
+  
 1. Open the terminal (Linux is recommended)
 2. Clone repository to local ```git clone  https://github.com/Gsonovb/DockerVolumeFileWatcher.git```
 3. Go to the demo folder ```cd DockerVolumeFileWatcher/demo```
@@ -52,3 +49,4 @@ All containers are bound to the following disk volumes
 6. Back to the terminal and press <KBD>Ctrl+C</KBD> to stop the service
 7. (optional) open `docker-compose.yml` file,Uncomment section and save. Then run the service again, and you can see `notify_bind` service did not detect a file modification, but `notify_volume` service detected a file change.
 8. Enter ```docker-compose down -v``` command to delete the service
+  
